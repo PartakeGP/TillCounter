@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 720px;
+      max-width: 900px;
       margin: 30px auto;
       padding: 20px;
       line-height: 1.4;
@@ -21,29 +21,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,.08);
     }
 
-    h1, h2 {
-      margin-top: 0;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 120px;
-      gap: 10px 16px;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    label {
-      font-weight: 600;
-    }
-
-    input[type="number"],
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
-      font-size: 1rem;
-    }
+    h1 { margin-top: 0; }
 
     .section-title {
       margin-top: 24px;
@@ -51,14 +29,51 @@
       font-size: 1.1rem;
       border-bottom: 1px solid #ddd;
       padding-bottom: 6px;
+      font-weight: bold;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .money-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .money-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 110px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    .line-total {
+      background: #f1f1f1;
     }
 
     .total-box {
-      margin-top: 20px;
+      margin-top: 24px;
       padding: 16px;
       background: #eef4ee;
       border-radius: 10px;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: bold;
     }
 
@@ -75,9 +90,7 @@
       color: white;
     }
 
-    button:hover {
-      opacity: 0.92;
-    }
+    button:hover { opacity: 0.92; }
 
     .status {
       margin-top: 14px;
@@ -89,8 +102,16 @@
       font-size: 0.95rem;
       margin-top: 10px;
     }
+
+    @media (max-width: 700px) {
+      .top-grid,
+      .money-columns {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
     <h1>Till Count</h1>
@@ -100,60 +121,112 @@
       <input type="hidden" name="subject" value="Till Count Submission" />
       <input type="hidden" name="from_name" value="Partake Till Counter" />
       <input type="hidden" name="to" value="cat@partakegp.com" />
+
       <input type="hidden" name="total" id="total-hidden" value="0.00" />
+      <input type="hidden" name="submission_timestamp" id="timestamp-hidden" />
+      <input type="hidden" name="submission_timestamp_iso" id="timestamp-iso-hidden" />
 
-      <div class="section-title">Associate</div>
-      <div class="grid">
-        <label for="associate">Associate Name</label>
-        <input type="text" id="associate" name="associate_name" required />
+      <div class="section-title">Submission Info</div>
+      <div class="top-grid">
+        <div>
+          <label for="associate">Associate Name</label>
+          <input type="text" id="associate" name="associate_name" required />
+        </div>
+
+        <div>
+          <label for="station">Station</label>
+          <select id="station" name="station" required>
+            <option value="">Select station</option>
+            <option value="Lounge/Retail">Lounge/Retail</option>
+            <option value="Event">Event</option>
+            <option value="Dine">Dine</option>
+          </select>
+        </div>
       </div>
 
-      <div class="section-title">Coins</div>
-      <div class="grid">
-        <label for="pennies">Pennies (.01)</label>
-        <input type="number" id="pennies" name="pennies" min="0" step="1" value="" />
+      <div class="money-columns">
+        <div>
+          <div class="section-title">Coins</div>
 
-        <label for="nickels">Nickels (.05)</label>
-        <input type="number" id="nickels" name="nickels" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="pennies">Pennies</label>
+            <input type="number" id="pennies" name="pennies_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="pennies-total" name="pennies_total" readonly />
+          </div>
 
-        <label for="dimes">Dimes (.10)</label>
-        <input type="number" id="dimes" name="dimes" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="nickels">Nickels</label>
+            <input type="number" id="nickels" name="nickels_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="nickels-total" name="nickels_total" readonly />
+          </div>
 
-        <label for="quarters">Quarters (.25)</label>
-        <input type="number" id="quarters" name="quarters" min="0" step="1" value="" />
-      </div>
+          <div class="money-row">
+            <label for="dimes">Dimes</label>
+            <input type="number" id="dimes" name="dimes_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="dimes-total" name="dimes_total" readonly />
+          </div>
 
-      <div class="section-title">Bills</div>
-      <div class="grid">
-        <label for="ones">$1</label>
-        <input type="number" id="ones" name="ones" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="quarters">Quarters</label>
+            <input type="number" id="quarters" name="quarters_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="quarters-total" name="quarters_total" readonly />
+          </div>
+        </div>
 
-        <label for="twos">$2</label>
-        <input type="number" id="twos" name="twos" min="0" step="1" value="" />
+        <div>
+          <div class="section-title">Bills</div>
 
-        <label for="fives">$5</label>
-        <input type="number" id="fives" name="fives" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="ones">$1</label>
+            <input type="number" id="ones" name="ones_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="ones-total" name="ones_total" readonly />
+          </div>
 
-        <label for="tens">$10</label>
-        <input type="number" id="tens" name="tens" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="twos">$2</label>
+            <input type="number" id="twos" name="twos_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="twos-total" name="twos_total" readonly />
+          </div>
 
-        <label for="twenties">$20</label>
-        <input type="number" id="twenties" name="twenties" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="fives">$5</label>
+            <input type="number" id="fives" name="fives_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="fives-total" name="fives_total" readonly />
+          </div>
 
-        <label for="fifties">$50</label>
-        <input type="number" id="fifties" name="fifties" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="tens">$10</label>
+            <input type="number" id="tens" name="tens_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="tens-total" name="tens_total" readonly />
+          </div>
 
-        <label for="hundreds">$100</label>
-        <input type="number" id="hundreds" name="hundreds" min="0" step="1" value="" />
+          <div class="money-row">
+            <label for="twenties">$20</label>
+            <input type="number" id="twenties" name="twenties_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="twenties-total" name="twenties_total" readonly />
+          </div>
+
+          <div class="money-row">
+            <label for="fifties">$50</label>
+            <input type="number" id="fifties" name="fifties_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="fifties-total" name="fifties_total" readonly />
+          </div>
+
+          <div class="money-row">
+            <label for="hundreds">$100</label>
+            <input type="number" id="hundreds" name="hundreds_quantity" min="0" step="1" />
+            <input class="line-total" type="text" id="hundreds-total" name="hundreds_total" readonly />
+          </div>
+        </div>
       </div>
 
       <div class="total-box">
-        Total: $<span id="total-display">0.00</span>
+        Running Total: $<span id="total-display">0.00</span>
       </div>
 
       <button type="submit">Submit Till Count</button>
       <div class="status" id="status"></div>
-      <div class="note">Enter the number of each coin or bill, not the dollar amount.</div>
+      <div class="note">Enter the quantity of each coin or bill, not the dollar amount.</div>
     </form>
   </div>
 
@@ -176,6 +249,8 @@
     const totalDisplay = document.getElementById('total-display');
     const totalHidden = document.getElementById('total-hidden');
     const statusBox = document.getElementById('status');
+    const timestampHidden = document.getElementById('timestamp-hidden');
+    const timestampIsoHidden = document.getElementById('timestamp-iso-hidden');
 
     function getCount(id) {
       const raw = document.getElementById(id).value;
@@ -184,11 +259,22 @@
 
     function calculateTotal() {
       let total = 0;
+
       for (const id in values) {
-        total += getCount(id) * values[id];
+        const lineTotal = getCount(id) * values[id];
+        total += lineTotal;
+
+        document.getElementById(`${id}-total`).value = `$${lineTotal.toFixed(2)}`;
       }
+
       totalDisplay.textContent = total.toFixed(2);
       totalHidden.value = total.toFixed(2);
+    }
+
+    function setTimestamp() {
+      const now = new Date();
+      timestampHidden.value = now.toLocaleString();
+      timestampIsoHidden.value = now.toISOString();
     }
 
     Object.keys(values).forEach(id => {
@@ -197,7 +283,10 @@
 
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
+
       calculateTotal();
+      setTimestamp();
+
       statusBox.textContent = "Submitting...";
 
       const formData = new FormData(form);
