@@ -245,6 +245,23 @@
       hundreds: 100
     };
 
+    const labels = {
+      pennies: "Pennies",
+      nickels: "Nickels",
+      dimes: "Dimes",
+      quarters: "Quarters",
+      ones: "$1",
+      twos: "$2",
+      fives: "$5",
+      tens: "$10",
+      twenties: "$20",
+      fifties: "$50",
+      hundreds: "$100"
+    };
+
+    const coinIds = ["pennies", "nickels", "dimes", "quarters"];
+    const billIds = ["ones", "twos", "fives", "tens", "twenties", "fifties", "hundreds"];
+
     const form = document.getElementById('till-form');
     const totalDisplay = document.getElementById('total-display');
     const totalHidden = document.getElementById('total-hidden');
@@ -277,6 +294,60 @@
       timestampIsoHidden.value = now.toISOString();
     }
 
+    function formatMoney(value) {
+      return `$${Number(value).toFixed(2)}`;
+    }
+
+    function getLineTotal(id) {
+      return getCount(id) * values[id];
+    }
+
+    function buildColumnRows(leftIds, rightIds) {
+      const maxRows = Math.max(leftIds.length, rightIds.length);
+      let rows = "";
+
+      for (let i = 0; i < maxRows; i++) {
+        const leftId = leftIds[i];
+        const rightId = rightIds[i];
+
+        const leftCells = leftId
+          ? `${labels[leftId]}: ${getCount(leftId)} = ${formatMoney(getLineTotal(leftId))}`
+          : "";
+
+        const rightCells = rightId
+          ? `${labels[rightId]}: ${getCount(rightId)} = ${formatMoney(getLineTotal(rightId))}`
+          : "";
+
+        rows += `${leftCells.padEnd(28, " ")} | ${rightCells}\n`;
+      }
+
+      return rows;
+    }
+
+    function buildEmailMessage() {
+      const associate = document.getElementById('associate').value.trim();
+      const station = document.getElementById('station').value;
+
+      return `Till Count Submission
+
+` +
+        `Associate: ${associate}
+` +
+        `Station: ${station}
+` +
+        `Submitted: ${timestampHidden.value}
+
+` +
+        `Coins                        | Bills
+` +
+        `-----------------------------|-----------------------------
+` +
+        buildColumnRows(coinIds, billIds) +
+        `
+Running Total: ${formatMoney(totalHidden.value)}
+`;
+    }
+
     Object.keys(values).forEach(id => {
       document.getElementById(id).addEventListener('input', calculateTotal);
     });
@@ -289,7 +360,12 @@
 
       statusBox.textContent = "Submitting...";
 
-      const formData = new FormData(form);
+      const formData = new FormData();
+      formData.append('access_key', form.querySelector('[name="access_key"]').value);
+      formData.append('to', form.querySelector('[name="to"]').value);
+      formData.append('from_name', 'Partake Till Counter');
+      formData.append('subject', `Till Count - ${document.getElementById('station').value} - ${timestampHidden.value}`);
+      formData.append('message', buildEmailMessage());
 
       try {
         const response = await fetch("https://api.web3forms.com/submit", {
